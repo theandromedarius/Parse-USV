@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { Tooltip } from "@mui/material";
 import {
   Button,
   Container,
@@ -108,7 +109,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "result_data.csv");
+    link.setAttribute("download", "RAW DATA USV");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -133,6 +134,10 @@ function App() {
   const handleIntervalTypeChange = (event) => {
     setIntervalType(event.target.value);
   };
+
+  const handleClear = () => location.reload();
+
+  console.log(previewText);
 
   return (
     <Container maxWidth="sm" sx={{ mt: 5, textAlign: "center" }}>
@@ -211,17 +216,35 @@ function App() {
               type="file"
               accept=".xlsx"
               multiple
+              disabled={originalData.length === 0}
               onChange={handleOverlayDataUpload}
             />
           </div>
-          <div>
-            <Button variant="contained" onClick={handleOverlay} sx={{}}>
-              Override
+          <div
+            style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="contained"
+              // onClick={handleClear}
+              onDoubleClick={handleClear}
+              color="error"
+            >
+              <Tooltip title="Double click to clear" arrow>
+                Clear
+              </Tooltip>
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleOverlay}
+              disabled={originalData.length === 0}
+            >
+              Execute
             </Button>
             <Button
               variant="contained"
               onClick={handleDownloadCSV}
-              sx={{ ml: 3 }}
+              color="success"
+              disabled={originalData.length === 0 || previewText.length === 0}
             >
               Download
             </Button>
