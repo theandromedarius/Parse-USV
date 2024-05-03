@@ -69,23 +69,27 @@ function App() {
     });
 
     let resultValues = Array.from(resultMap.values());
-    const startDate = new Date(`${date} ${time}`);
+    const startDate = date && time ? new Date(`${date} ${time}`) : null;
     const intervalSeconds =
       parseInt(interval) * (intervalType === "second" ? 1000 : 1);
 
     resultValues = resultValues.map((row, index) => ({
       ...row,
-      Time: getEstimateTime(startDate, intervalSeconds, index),
+      Time: startDate
+        ? getEstimateTime(startDate, intervalSeconds, index)
+        : row.Time || "", // Jika tidak ada waktu yang dimasukkan, gunakan waktu dari data asli jika tersedia
     }));
 
     const resultValuesWithoutLast = resultValues.slice(0, -1);
     setPreviewText(
-      `Lattitude,Longitude,Depth,Time,Page\n${resultValuesWithoutLast
+      `Lattitude,Longitude,Depth,Time${
+        resultValuesWithoutLast.some((row) => row.Page) ? ",Page" : ""
+      }\n${resultValuesWithoutLast
         .map(
           (row) =>
             `${row.Lattitude},${row.Longitude},${row.Depth || ""},${
               row.Time || ""
-            },${row.Page || ""}`
+            }${row.Page ? `,${row.Page}` : ""}`
         )
         .join("\n")}`
     );
