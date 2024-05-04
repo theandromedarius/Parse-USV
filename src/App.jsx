@@ -83,15 +83,22 @@ function App() {
     const filledData = fillDepthForInterpolatedData(resultValues);
 
     const resultValuesWithoutLast = filledData.slice(0, -1);
+
+    // Hapus kolom Page yang berisi penanda "Page 3"
+    const previewData = resultValuesWithoutLast.map((row) => ({
+      Lattitude: row.Lattitude,
+      Longitude: row.Longitude,
+      Depth: row.Depth || "",
+      Time: row.Time || "",
+    }));
+
     setPreviewText(
-      `Lattitude,Longitude,Depth,Time${
-        resultValuesWithoutLast.some((row) => row.Page) ? ",Page" : ""
-      }\n${resultValuesWithoutLast
+      `Lattitude,Longitude,Depth,Time\n${previewData
         .map(
           (row) =>
             `${row.Lattitude},${row.Longitude},${row.Depth || ""},${
               row.Time || ""
-            }${row.Page ? `,${row.Page}` : ""}`
+            }`
         )
         .join("\n")}`
     );
@@ -107,7 +114,6 @@ function App() {
   const fillDepthForInterpolatedData = (data) => {
     return data.map((row, index, arr) => {
       if (row.Page !== "Page 3") {
-        // Mencari index data penimpa sebelumnya
         let prevPage3Index = -1;
         for (let i = index - 1; i >= 0; i--) {
           if (arr[i].Page === "Page 3") {
