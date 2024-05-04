@@ -80,9 +80,7 @@ function App() {
         : row.Time || "",
     }));
 
-    // Panggil fungsi untuk mengisi kedalaman antara data yang tertimpa
     const filledData = fillDepthForInterpolatedData(resultValues);
-    console.log("Filled Data:", filledData);
 
     const resultValuesWithoutLast = filledData.slice(0, -1);
     setPreviewText(
@@ -118,7 +116,6 @@ function App() {
           }
         }
 
-        // Mencari index data penimpa setelahnya
         let nextPage3Index = -1;
         for (let i = index + 1; i < arr.length; i++) {
           if (arr[i].Page === "Page 3") {
@@ -127,12 +124,10 @@ function App() {
           }
         }
 
-        // Jika kedua data penimpa ditemukan
         if (prevPage3Index !== -1 && nextPage3Index !== -1) {
           const prevPage3Depth = parseFloat(arr[prevPage3Index].Depth);
           const nextPage3Depth = parseFloat(arr[nextPage3Index].Depth);
 
-          // Menghasilkan kedalaman secara acak di antara kedua kedalaman penimpa
           const randomDepth = getRandomDepth(prevPage3Depth, nextPage3Depth);
           return {
             ...row,
@@ -181,8 +176,6 @@ function App() {
   };
 
   const handleClear = () => location.reload();
-
-  console.log(previewText);
 
   return (
     <Container maxWidth="sm" sx={{ mt: 5, textAlign: "center" }}>
