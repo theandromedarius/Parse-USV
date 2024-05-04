@@ -8,7 +8,6 @@ import {
   Container,
   TextField,
   Typography,
-  InputAdornment,
   MenuItem,
   Select,
 } from "@mui/material";
@@ -19,8 +18,8 @@ function App() {
   const [previewText, setPreviewText] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [interval, setInterval] = useState(1); // Default interval: 1 detik
-  const [intervalType, setIntervalType] = useState("second"); // Default interval type: detik
+  const [interval, setInterval] = useState(1);
+  const [intervalType, setIntervalType] = useState("second");
 
   const handleOriginalDataUpload = (event) => {
     const file = event.target.files[0];
@@ -64,7 +63,7 @@ function App() {
         resultMap.set(key, {
           ...originalRow,
           Depth: row[4],
-          Page: "Page 3", // Tambahkan penanda "Page 3" untuk baris yang ter-overlay
+          Page: "Page 3",
         });
       }
     });
@@ -78,10 +77,14 @@ function App() {
       ...row,
       Time: startDate
         ? getEstimateTime(startDate, intervalSeconds, index)
-        : row.Time || "", // Jika tidak ada waktu yang dimasukkan, gunakan waktu dari data asli jika tersedia
+        : row.Time || "",
     }));
 
-    const resultValuesWithoutLast = resultValues.slice(0, -1);
+    // Panggil fungsi untuk mengisi kedalaman antara data yang tertimpa
+    const filledData = fillDepthForInterpolatedData(resultValues);
+    console.log("Filled Data:", filledData);
+
+    const resultValuesWithoutLast = filledData.slice(0, -1);
     setPreviewText(
       `Lattitude,Longitude,Depth,Time${
         resultValuesWithoutLast.some((row) => row.Page) ? ",Page" : ""
@@ -101,6 +104,48 @@ function App() {
     const estimatedDate = new Date(startDate.getTime() + milliseconds);
     const formattedDate = estimatedDate.toLocaleString("en-US");
     return formattedDate.replace(",", "");
+  };
+
+  const fillDepthForInterpolatedData = (data) => {
+    return data.map((row, index, arr) => {
+      if (row.Page !== "Page 3") {
+        // Mencari index data penimpa sebelumnya
+        let prevPage3Index = -1;
+        for (let i = index - 1; i >= 0; i--) {
+          if (arr[i].Page === "Page 3") {
+            prevPage3Index = i;
+            break;
+          }
+        }
+
+        // Mencari index data penimpa setelahnya
+        let nextPage3Index = -1;
+        for (let i = index + 1; i < arr.length; i++) {
+          if (arr[i].Page === "Page 3") {
+            nextPage3Index = i;
+            break;
+          }
+        }
+
+        // Jika kedua data penimpa ditemukan
+        if (prevPage3Index !== -1 && nextPage3Index !== -1) {
+          const prevPage3Depth = parseFloat(arr[prevPage3Index].Depth);
+          const nextPage3Depth = parseFloat(arr[nextPage3Index].Depth);
+
+          // Menghasilkan kedalaman secara acak di antara kedua kedalaman penimpa
+          const randomDepth = getRandomDepth(prevPage3Depth, nextPage3Depth);
+          return {
+            ...row,
+            Depth: randomDepth.toFixed(2),
+          };
+        }
+      }
+      return row;
+    });
+  };
+
+  const getRandomDepth = (min, max) => {
+    return Math.random() * (max - min) + min;
   };
 
   const handleDownloadCSV = () => {
@@ -225,12 +270,11 @@ function App() {
           >
             <Button
               variant="contained"
-              // onClick={handleClear}
               onDoubleClick={handleClear}
               color="error"
             >
               <Tooltip title="Double click to clear" arrow>
-                Clear
+                <span>Clear</span>
               </Tooltip>
             </Button>
             <Button
